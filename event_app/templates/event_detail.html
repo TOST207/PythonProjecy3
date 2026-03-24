@@ -1,0 +1,99 @@
+{% extends 'theme.html' %}
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'events' %}">Мероприятия</a></li>
+                <li class="breadcrumb-item active">{{ event.title|truncatewords:3 }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-header"><h3 class="mb-0">{{ event.title }}</h3></div>
+            <div class="card-body">
+                <h5>Описание</h5>
+                <p>{{ event.description }}</p>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6 mb-2"><strong>Начало:</strong><br>{{ event.start_date|date:"d.m.Y H:i" }}</div>
+                    <div class="col-md-6 mb-2"><strong>Окончание:</strong><br>{{ event.end_date|date:"d.m.Y H:i" }}</div>
+                    <div class="col-md-6 mb-2"><strong>Категория:</strong><br>{{ event.category.name|default:"Не указана" }}</div>
+                    <div class="col-md-6 mb-2"><strong>Место:</strong><br>{{ event.location.name|default:"Не указано" }}<br><small class="text-muted">{{ event.location.address|default:"" }}</small></div>
+                    <div class="col-md-6 mb-2"><strong>Организатор:</strong><br>{{ event.organizer.login }}</div>
+                    <div class="col-md-6 mb-2"><strong>Участников:</strong><br>{{ participants_count }} / {{ event.max_participants }}</div>
+                </div>
+                {% if event.max_participants > 0 %}
+                <div class="mt-2">
+                    <label>Заполненность:</label>
+                    <div class="progress">
+                        {% widthratio participants_count event.max_participants 100 as pct %}
+                        <div class="progress-bar {% if pct > 90 %}bg-danger{% elif pct > 70 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ pct }}%">{{ pct }}%</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Участники ({{ participants_count }})</h5></div>
+            <div class="card-body">
+                {% if registrations %}
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>#</th><th>Участник</th><th>Email</th><th>Дата регистрации</th></tr></thead>
+                    <tbody>
+                        {% for r in registrations %}
+                        <tr><td>{{ forloop.counter }}</td><td>{{ r.participant.login }}</td><td>{{ r.participant.email }}</td><td>{{ r.registered_at|date:"d.m.Y H:i" }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}<p class="text-muted mb-0">Нет участников</p>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0">Действия</h5></div>
+            <div class="card-body">
+                {% if request.session.user_id %}
+                    {% if is_registered %}
+                    <div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> Вы записаны</div>
+                    <a href="{% url 'cancel_registration' event.id %}" class="btn btn-danger w-100 mb-2"><i class="bi bi-x-circle"></i> Отменить запись</a>
+                    {% elif participants_count < event.max_participants or event.max_participants == 0 %}
+                    <div class="alert alert-info py-2"><i class="bi bi-info-circle"></i> Есть места</div>
+                    <a href="{% url 'register_for_event' event.id %}" class="btn btn-success w-100 mb-2"><i class="bi bi-check-circle"></i> Записаться</a>
+                    {% else %}
+                    <div class="alert alert-danger py-2"><i class="bi bi-exclamation-triangle"></i> Мест нет</div>
+                    <button class="btn btn-secondary w-100 mb-2" disabled>Нет мест</button>
+                    {% endif %}
+
+                    {% if request.session.user_id == event.organizer.id or request.session.user_role == 'admin' %}
+                    <hr>
+                    <a href="{% url 'edit_event' event.id %}" class="btn btn-warning w-100 mb-2"><i class="bi bi-pencil"></i> Редактировать</a>
+                    <a href="{% url 'delete_event' event.id %}" class="btn btn-danger w-100 mb-2" onclick="return confirm('Удалить?')"><i class="bi bi-trash"></i> Удалить</a>
+                    {% endif %}
+                {% else %}
+                <div class="alert alert-warning py-2"><i class="bi bi-exclamation-circle"></i> Войдите для записи</div>
+                <a href="{% url 'login' %}" class="btn btn-primary w-100 mb-2"><i class="bi bi-box-arrow-in-right"></i> Войти</a>
+                {% endif %}
+                <a href="{% url 'events' %}" class="btn btn-outline-secondary w-100"><i class="bi bi-arrow-left"></i> Назад</a>
+            </div>
+        </div>
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Состоится</h6>
+                <h4 class="text-primary mb-0">{{ event.start_date|date:"d.m.Y" }}</h4>
+                <small>{{ event.start_date|date:"H:i" }} - {{ event.end_date|date:"H:i" }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

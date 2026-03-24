@@ -1,0 +1,129 @@
+{% extends 'theme.html' %}
+{% block title %}Создание мероприятия{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-plus-circle"></i> Создание мероприятия</h2>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Основная информация</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label">
+                            <i class="bi bi-card-heading"></i> Название *
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="title"
+                               name="title"
+                               required
+                               placeholder="Введите название мероприятия">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-text-paragraph"></i> Описание *
+                        </label>
+                        <textarea class="form-control"
+                                  id="description"
+                                  name="description"
+                                  rows="4"
+                                  required
+                                  placeholder="Опишите мероприятие"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">
+                                <i class="bi bi-calendar-event"></i> Дата и время начала *
+                            </label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   id="start_date"
+                                   name="start_date"
+                                   required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">
+                                <i class="bi bi-calendar-event"></i> Дата и время окончания *
+                            </label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   id="end_date"
+                                   name="end_date"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">
+                                <i class="bi bi-tag"></i> Категория
+                            </label>
+                            <select class="form-select" id="category" name="category">
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">
+                                <i class="bi bi-geo-alt"></i> Место проведения
+                            </label>
+                            <select class="form-select" id="location" name="location">
+                                {% for loc in locations %}
+                                <option value="{{ loc.id }}">{{ loc.name }}{% if loc.address %} - {{ loc.address }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="max_participants" class="form-label">
+                            <i class="bi bi-people"></i> Максимальное количество участников
+                        </label>
+                        <input type="number"
+                               class="form-control"
+                               id="max_participants"
+                               name="max_participants"
+                               min="0"
+                               value="0"
+                               placeholder="0 - без ограничений">
+                        <div class="form-text">
+                            Укажите 0, если количество мест не ограничено
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'index' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Создать мероприятие
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+const minDateTime = now.toISOString().slice(0,16);
+document.getElementById('start_date').setAttribute('min', minDateTime);
+document.getElementById('end_date').setAttribute('min', minDateTime);
+document.getElementById('start_date').addEventListener('change', function() {
+    const startDate = new Date(this.value);
+    if (startDate) {
+        const endDate = new Date(startDate.getTime() + 60*60*1000); // +1 час
+        endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
+        document.getElementById('end_date').value = endDate.toISOString().slice(0,16);
+    }
+});
+</script>
+{% endblock %}

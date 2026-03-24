@@ -1,0 +1,96 @@
+{% extends 'theme.html' %}
+{% block title %}Редактирование: {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'events' %}">Мероприятия</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'event_detail' event.id %}">{{ event.title|truncatewords:2 }}</a></li>
+                <li class="breadcrumb-item active">Редактирование</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-pencil"></i> Редактирование мероприятия</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-card-heading"></i> Название *</label>
+                        <input type="text" class="form-control" name="title" value="{{ event.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-text-paragraph"></i> Описание *</label>
+                        <textarea class="form-control" name="description" rows="4" required>{{ event.description }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="bi bi-calendar-event"></i> Дата начала *</label>
+                            <input type="datetime-local" class="form-control" name="start_date" 
+                                   value="{{ event.start_date|date:'Y-m-d\TH:i' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="bi bi-calendar-event"></i> Дата окончания *</label>
+                            <input type="datetime-local" class="form-control" name="end_date" 
+                                   value="{{ event.end_date|date:'Y-m-d\TH:i' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="bi bi-tag"></i> Категория</label>
+                            <select class="form-select" name="category">
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if cat.id == event.category_id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="bi bi-geo-alt"></i> Место проведения</label>
+                            <select class="form-select" name="location">
+                                {% for loc in locations %}
+                                <option value="{{ loc.id }}" {% if loc.id == event.location_id %}selected{% endif %}>{{ loc.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-people"></i> Макс. участников</label>
+                        <input type="number" class="form-control" name="max_participants" 
+                               value="{{ event.max_participants }}" min="0">
+                        <div class="form-text">0 = без ограничений</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'event_detail' event.id %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3 mb-0">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Примечание:</strong> Изменения вступят в силу сразу после сохранения. 
+            Участники получат уведомление об изменениях (в будущей версии).
+        </div>
+    </div>
+</div>
+{% endblock %}

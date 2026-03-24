@@ -1,0 +1,66 @@
+{% extends 'theme.html' %}
+
+{% block title %}Мои мероприятия{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-star"></i> Мои мероприятия</h2>
+    </div>
+</div>
+
+{% if registrations %}
+    {% for registration in registrations %}
+    <div class="event-card">
+        <div class="row">
+            <div class="col-md-8">
+                <h4 class="event-title">{{ registration.event.title }}</h4>
+                <div class="event-meta">
+                    <div class="event-meta-item">
+                        <span class="event-meta-label"><i class="bi bi-calendar"></i> Начало:</span>
+                        <span class="event-meta-value">{{ registration.event.start_date|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <span class="event-meta-label"><i class="bi bi-clock"></i> Окончание:</span>
+                        <span class="event-meta-value">{{ registration.event.end_date|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <span class="event-meta-label"><i class="bi bi-geo-alt"></i> Место:</span>
+                        <span class="event-meta-value">{{ registration.event.location.name|default:"Не указано" }}</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <span class="event-meta-label"><i class="bi bi-person"></i> Организатор:</span>
+                        <span class="event-meta-value">{{ registration.event.organizer.login }}</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <span class="event-meta-label"><i class="bi bi-clock"></i> Записан:</span>
+                        <span class="event-meta-value">{{ registration.registered_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex flex-column justify-content-end align-items-end">
+                <div class="mb-2">
+                    <span class="badge badge-success">Зарегистрирован</span>
+                </div>
+                <div>
+                    <a href="{% url 'event_detail' registration.event.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> Подробнее
+                    </a>
+                    <a href="{% url 'cancel_registration' registration.event.id %}" class="btn btn-danger btn-sm mt-2">
+                        <i class="bi bi-x-circle"></i> Отменить запись
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="empty-state">
+    <h4><i class="bi bi-calendar-x"></i> Вы пока не записаны ни на одно мероприятие</h4>
+    <p>Просмотрите доступные мероприятия и запишитесь на интересные</p>
+    <a href="{% url 'events' %}" class="btn btn-primary mt-3">
+        <i class="bi bi-list-ul"></i> Смотреть все мероприятия
+    </a>
+</div>
+{% endif %}
+{% endblock %}

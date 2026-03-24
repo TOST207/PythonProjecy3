@@ -1,0 +1,159 @@
+{% extends 'theme.html' %}
+
+{% block title %}Все мероприятия{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-list-ul"></i> Мероприятия</h2>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-section">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Поиск</label>
+            <input type="text" class="form-control" name="search" 
+                   value="{{ search_query }}" placeholder="Название или описание...">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Категория</label>
+            <select class="form-select" name="category">
+                <option value="">Все категории</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Дата начала</label>
+            <input type="date" class="form-control" name="date_from" 
+                   value="{{ date_from }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i> Найти
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Events List -->
+<div class="row">
+    <div class="col-12">
+        {% if events %}
+            {% for event in events %}
+            <div class="event-card">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4 class="event-title">{{ event.title }}</h4>
+                        <div class="event-meta">
+                            <div class="event-meta-item">
+                                <span class="event-meta-label"><i class="bi bi-calendar"></i> Начало:</span>
+                                <span class="event-meta-value">{{ event.start_date|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="event-meta-label"><i class="bi bi-clock"></i> Окончание:</span>
+                                <span class="event-meta-value">{{ event.end_date|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="event-meta-label"><i class="bi bi-geo-alt"></i> Место:</span>
+                                <span class="event-meta-value">{{ event.location_name|default:"Не указано" }}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="event-meta-label"><i class="bi bi-person"></i> Организатор:</span>
+                                <span class="event-meta-value">{{ event.organizer_name }}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="event-meta-label"><i class="bi bi-people"></i> Участники:</span>
+                                <span class="event-meta-value">{{ event.participants_count }} / {{ event.max_participants }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex flex-column justify-content-end align-items-end">
+                        <div class="mb-2">
+                            <span class="badge {% if event.participants_count >= event.max_participants %}badge-danger{% else %}badge-success{% endif %}">
+                                {% if event.participants_count >= event.max_participants %}
+                                    Мест нет
+                                {% else %}
+                                    Есть места
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> Подробнее
+                            </a>
+                            {% if request.session.user_id %}
+                                {% if not event.is_registered %}
+                                    {% if event.participants_count < event.max_participants %}
+                                    <a href="{% url 'register_for_event' event.id %}" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle"></i> Записаться
+                                    </a>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'cancel_registration' event.id %}" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Отменить
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&search={{ search_query }}&category={{ category_id }}&date_from={{ date_from }}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ category_id }}&date_from={{ date_from }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ category_id }}&date_from={{ date_from }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&category={{ category_id }}&date_from={{ date_from }}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <h4><i class="bi bi-calendar-x"></i> Мероприятий не найдено</h4>
+            <p>Попробуйте изменить параметры поиска или создайте новое мероприятие</p>
+            {% if request.session.user_role == 'organizer' %}
+            <a href="{% url 'create_event' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-circle"></i> Создать мероприятие
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

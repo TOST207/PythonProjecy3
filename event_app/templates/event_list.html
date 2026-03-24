@@ -1,0 +1,28 @@
+{% extends 'theme.html' %}
+{% block title %}Мероприятия{% endblock %}
+{% block content %}
+<h2 style="margin-bottom: 20px;">Расписание мероприятий</h2>
+{% if events %}
+    {% for event in events %}
+    <div class="event-card">
+        <h3>{{ event.title }}</h3>
+        <div class="event-info">
+            <p><strong>Описание:</strong> {{ event.description }}</p>
+            <p><strong>Начало:</strong> {{ event.start_date|date:"d.m.Y H:i" }}</p>
+            <p><strong>Окончание:</strong> {{ event.end_date|date:"d.m.Y H:i" }}</p>
+            <p><strong>Место:</strong> {{ event.location.name|default:"Не указано" }} ({{ event.location.address|default:"" }})</p>
+            <p><strong>Категория:</strong> {{ event.category.name|default:"Не указано" }}</p>
+            <p><strong>Организатор:</strong> {{ event.organizer.login }}</p>
+            <p><strong>Участников:</strong> {{ event.registrations.count }} / {{ event.max_participants }}</p>
+        </div>
+        {% if request.session.user_id %}
+            <a href="{% url 'register_event' event.id %}" class="btn btn-success">Записаться</a>
+        {% else %}
+            <p style="color: #e74c3c;">Для записи необходимо <a href="{% url 'login' %}">войти</a></p>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>Мероприятий пока нет.</p>
+{% endif %}
+{% endblock %}
